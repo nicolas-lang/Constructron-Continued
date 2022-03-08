@@ -227,7 +227,9 @@ function request_path(constructrons, goal)
                 constructrons = constructrons
             }
             for c, constructron in ipairs(constructrons) do
-                constructron.autopilot_destination = nil
+                if constructron.valid then
+                    constructron.autopilot_destination = nil
+                end
             end
             return new_goal
         else
@@ -251,11 +253,11 @@ script.on_event(defines.events.on_script_path_request_finished, function(event)
         clean_path = clean_linear_path(path)
         for c, constructron in ipairs(constructrons) do
             constructron.autopilot_destination = nil
-            local i = 0
+            local x = 1
             for i, waypoint in ipairs(clean_path) do
                 constructron.add_autopilot_destination(waypoint.position)
-                VisualDebugCircle(waypoint.position,constructron.surface,{r = 100, g = 0, b = 100, a = 0.2},tostring(i))
-                i = i + 1
+                VisualDebugCircle(waypoint.position,constructron.surface,{r = 100, g = 0, b = 100, a = 0.2},tostring(x))
+                x = x + 1
             end
         end
         global.constructron_pathfinder_requests[event.id] = nil
@@ -949,7 +951,7 @@ actions = {
         end
         ghosts = surface.find_entities_filtered{
             area = {chunk.minimum, chunk.maximum},
-            type = {"entity-ghost", "tile-ghost" }
+            type = {"entity-ghost", "tile-ghost", "item-request-proxy"}
         }
         if next(ghosts or {}) then -- if there are ghosts because inventory doesn't have the items for them, add them to be built for the next job
             game.print('added ' .. #ghosts .. ' unbuilt ghosts.')
@@ -1130,7 +1132,7 @@ function get_job(constructrons)
                             local required_slots1
                             local required_slots2
                             if not chunk1.merged then
-                                required_slots1 = calculate_required_inventory_slot_count(chunk1.required_items, constructron_count)
+                                required_slots1 = calculate_required_inventory_slot_count(chunk1.required_items or {}, constructron_count)
                                 required_slots1 = required_slots1 + calculate_required_inventory_slot_count(chunk1.trash_items or {}, constructron_count)
                                 for name, count in pairs(chunk1['required_items']) do
                                     requested_items[name] = math.ceil(((requested_items[name] or 0)*constructron_count + count) / constructron_count)
@@ -1139,7 +1141,7 @@ function get_job(constructrons)
                                 required_slots1 = 0
                             end
                             if not chunk2.merged then
-                                required_slots2 = calculate_required_inventory_slot_count(chunk2.required_items, constructron_count)
+                                required_slots2 = calculate_required_inventory_slot_count(chunk2.required_items or {}, constructron_count)
                                 required_slots2 = required_slots2 + calculate_required_inventory_slot_count(chunk2.trash_items or {}, constructron_count)
                                 for name, count in pairs(chunk2['required_items']) do
                                     requested_items[name] = math.ceil(((requested_items[name] or 0)*constructron_count + count) / constructron_count)
@@ -1184,7 +1186,7 @@ function get_job(constructrons)
             total_required_slots = 0
 
             for i, chunk in ipairs(chunks) do
-                local required_slots = calculate_required_inventory_slot_count(chunk.required_items, constructron_count)
+                local required_slots = calculate_required_inventory_slot_count(chunk.required_items or {}, constructron_count)
                 required_slots = required_slots + calculate_required_inventory_slot_count(chunk.trash_items or {}, constructron_count)
                 if ((total_required_slots + required_slots) < empty_stack_count) then
                     total_required_slots = total_required_slots + required_slots
