@@ -265,7 +265,7 @@ me.stats = function()
         for _, data_name in pairs(surface_queues) do
             local data = global[data_name][surface.index]
             if type(data)=="table" then
-                log(serpent.block(data))
+                --log(serpent.block(data))
                 global_stats[surface.name .. ":" .. data_name] = table_size(data)
             else
                 global_stats[surface.name .. ":" .. data_name] = tostring(data)
