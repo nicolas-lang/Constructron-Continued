@@ -251,8 +251,22 @@ local function disable(player, parameters)
     end
 end
 
-local function help()
-    cmd.help()
+local function stats(player, _ )
+    local stats = cmd.stats()
+    log(serpent.block(stats))
+    if stats and player then
+        for k,v in pairs(stats) do
+            player.print(k .. ": " .. tostring(v))
+        end
+    end
+    return stats
+end
+
+local function help(player, parameters)
+    log("control:help")
+    log("by player:" .. player.name)
+    log("parameters: " .. serpent.block(parameters))
+    cmd.help_text()
 end
 
 --===========================================================================--
@@ -265,6 +279,7 @@ local ctron_commands = {
     clear = clear,
     enable = enable,
     disable = disable,
+    stats = stats
 }
 
 -------------------------------------------------------------------------------
@@ -283,7 +298,7 @@ commands.add_command(
                 ctron_commands[command](player,params)
             else
                 game.print('Command parameter does not exist.')
-                cmd.help_text()
+                help(player,{param.parameter})
             end
         end
     end

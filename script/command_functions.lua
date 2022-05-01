@@ -229,6 +229,51 @@ me.clear_ctron_inventory = function()
         end
     end
 end
+me.stats = function()
+    local queues = {
+        "registered_entities",
+        "constructron_statuses",
+        "ignored_entities",
+        "allowed_items",
+        "ghost_entities",
+        "deconstruction_entities",
+        "upgrade_entities",
+        "repair_entities",
+        "job_bundles",
+        "constructrons",
+        "service_stations",
+    }
+    local global_stats = {
+    }
+    for _, data_name in pairs(queues) do
+        local data = global[data_name]
+        if type(data)=="table" then
+            global_stats[data_name] = table_size(data)
+        else
+            global_stats[data_name] = tostring(data)
+        end
+    end
+    local surface_queues = {
+        "constructrons_count",
+        "stations_count",
+        "construct_queue",
+        "deconstruct_queue",
+        "upgrade_queue",
+        "repair_queue",
+    }
+    for s, surface in pairs(game.surfaces) do
+        for _, data_name in pairs(surface_queues) do
+            local data = global[data_name][surface.index]
+            if type(data)=="table" then
+                log(serpent.block(data))
+                global_stats[surface.name .. ":" .. data_name] = table_size(data)
+            else
+                global_stats[surface.name .. ":" .. data_name] = tostring(data)
+            end
+        end
+    end
+    return global_stats
+end
 
 me.help_text = function()
     game.print('Constructron-Continued command help:')
@@ -236,7 +281,9 @@ me.help_text = function()
     game.print('/ctron (enable|disable) (debug|landfill|constructruction|deconstruction|ground_deconstruction|upgrade|repair) - toggle job types.')
     game.print('/ctron reset (settings|queues|entities|all)')
     game.print('/ctron clear all - clears all jobs, queued jobs and unprocessed entities')
+    game.print('/ctron stats for a basic display of queue length')
     game.print('See Factorio mod portal for further assistance https://mods.factorio.com/mod/Constructron-Continued')
+    
 end
 
 return me
